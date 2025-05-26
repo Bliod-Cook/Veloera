@@ -77,13 +77,18 @@ func GeminiTextGenerationStreamHandler(c *gin.Context, resp *http.Response, info
 	var imageCount int
 
 	helper.SetEventStreamHeaders(c)
+	decoder := json.NewDecoder(resp.Body)
+	info.SetFirstResponseTime()
 
-	helper.StreamScannerHandler(c, resp, info, func(data string) bool {
+	for {
 		var geminiResponse GeminiChatResponse
-		err := common.DecodeJsonStr(data, &geminiResponse)
+		err := decoder.Decode(&geminiResponse)
+		if err == io.EOF {
+			break
+		}
 		if err != nil {
 			common.LogError(c, "error unmarshalling stream response: "+err.Error())
-			return false
+			return nil, service.OpenAIErrorWrapper(err, "decode_response_body_failed", http.StatusInternalServerError)
 		}
 
 		// 统计图片数量
@@ -107,9 +112,7 @@ func GeminiTextGenerationStreamHandler(c *gin.Context, resp *http.Response, info
 		if err != nil {
 			common.LogError(c, err.Error())
 		}
-
-		return true
-	})
+	}
 
 	if imageCount != 0 {
 		if usage.CompletionTokens == 0 {
@@ -123,6 +126,7 @@ func GeminiTextGenerationStreamHandler(c *gin.Context, resp *http.Response, info
 
 	// 结束流式响应
 	helper.Done(c)
+	_ = resp.Body.Close()
 
 	return usage, nil
 }

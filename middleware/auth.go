@@ -186,6 +186,9 @@ func TokenAuth() func(c *gin.Context) {
 		// gemini api 从query中获取key
 		if strings.HasPrefix(c.Request.URL.Path, "/v1beta/models/") {
 			skKey := c.Query("key")
+			if skKey == "" {
+				skKey = c.Request.Header.Get("x-goog-api-key")
+			}
 			if skKey != "" {
 				c.Request.Header.Set("Authorization", "Bearer "+skKey)
 			}
