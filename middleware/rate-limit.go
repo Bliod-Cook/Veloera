@@ -3,10 +3,12 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
 	"veloera/common"
+	"veloera/model"
+
+	"github.com/gin-gonic/gin"
 )
 
 var timeFormat = "2006-01-02T15:04:05.000Z"
@@ -98,6 +100,33 @@ func GlobalAPIRateLimit() func(c *gin.Context) {
 		return rateLimitFactory(common.GlobalApiRateLimitNum, common.GlobalApiRateLimitDuration, "GA")
 	}
 	return defNext
+}
+
+func RateLimit() func(c *gin.Context) {
+	return func(c *gin.Context) {
+		if !common.RedisEnabled {
+			// It's safe to call multi times.
+			inMemoryRateLimiter.Init(common.RateLimitKeyExpirationDuration)
+		}
+		key := c.GetString("key")
+		if key == "" {
+			c.Next()
+			return
+		}
+		token, err := model.GetTokenByKey(key, false)
+		if err != nil {
+			c.Next()
+			return
+		}
+		if token.RPM > 0 {
+			if common.RedisEnabled {
+				redisRateLimiter(c, token.RPM, 60, "rpm:"+token.Key)
+			} else {
+				memoryRateLimiter(c, token.RPM, 60, "rpm:"+token.Key)
+			}
+		}
+		c.Next()
+	}
 }
 
 func CriticalRateLimit() func(c *gin.Context) {

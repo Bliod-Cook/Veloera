@@ -31,6 +31,7 @@ export default function CreateTokenPage() {
   const [allowIps, setAllowIps] = useState('');
   const [group, setGroup] = useState('');
   const [tokenCount, setTokenCount] = useState(1);
+  const [rpm, setRpm] = useState(0);
   
   const [availableModels, setAvailableModels] = useState<Model[]>([]);
   const [availableGroups, setAvailableGroups] = useState<Group[]>([]);
@@ -97,7 +98,8 @@ export default function CreateTokenPage() {
         model_limits: modelLimitsEnabled ? selectedModels.join(',') : '',
         allow_ips: allowIps,
         group,
-        count: tokenCount
+        count: tokenCount,
+        rpm: rpm
       };
       
       const response = await api.post('/api/token', tokenData);
@@ -212,6 +214,20 @@ export default function CreateTokenPage() {
                 />
                 <Calendar className="absolute right-3 top-2.5 h-5 w-5 text-muted-foreground" />
               </div>
+            </div>
+
+            <div>
+              <label htmlFor="rpm" className="block text-sm font-medium mb-1">
+                {t('token.rpm')}
+              </label>
+              <input
+                id="rpm"
+                type="number"
+                min="0"
+                value={rpm}
+                onChange={(e) => setRpm(parseInt(e.target.value))}
+                className="block w-full rounded-md border border-input bg-background px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
             </div>
             
             <div className="flex items-center mb-4">

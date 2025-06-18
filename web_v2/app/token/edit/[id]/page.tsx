@@ -22,6 +22,7 @@ interface TokenData {
   model_limits: string;
   allow_ips: string;
   group: string;
+  rpm: number;
 }
 
 interface Model {
@@ -53,6 +54,7 @@ export default function EditTokenPage({ params }: PageProps) {
   const [selectedModels, setSelectedModels] = useState<string[]>([]);
   const [allowIps, setAllowIps] = useState('');
   const [group, setGroup] = useState('');
+  const [rpm, setRpm] = useState(0);
   
   const [availableModels, setAvailableModels] = useState<Model[]>([]);
   const [availableGroups, setAvailableGroups] = useState<Group[]>([]);
@@ -88,6 +90,7 @@ export default function EditTokenPage({ params }: PageProps) {
           setSelectedModels(token.model_limits ? token.model_limits.split(',') : []);
           setAllowIps(token.allow_ips || '');
           setGroup(token.group || '');
+          setRpm(token.rpm || 0);
         } else {
           setError(tokenResponse.message || t('errors.unknownError'));
         }
@@ -142,7 +145,8 @@ export default function EditTokenPage({ params }: PageProps) {
         model_limits_enabled: modelLimitsEnabled,
         model_limits: modelLimitsEnabled ? selectedModels.join(',') : '',
         allow_ips: allowIps,
-        group
+        group,
+        rpm
       };
       
       const response = await api.put('/api/token', tokenData);
@@ -270,6 +274,20 @@ export default function EditTokenPage({ params }: PageProps) {
                 />
                 <Calendar className="absolute right-3 top-2.5 h-5 w-5 text-muted-foreground" />
               </div>
+            </div>
+
+            <div>
+              <label htmlFor="rpm" className="block text-sm font-medium mb-1">
+                {t('token.rpm')}
+              </label>
+              <input
+                id="rpm"
+                type="number"
+                min="0"
+                value={rpm}
+                onChange={(e) => setRpm(parseInt(e.target.value))}
+                className="block w-full rounded-md border border-input bg-background px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
             </div>
             
             <div className="flex items-center mb-4">

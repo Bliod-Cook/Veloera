@@ -22,6 +22,7 @@ interface Token {
   model_limits: string;
   allow_ips: string;
   group: string;
+  rpm: number;
 }
 
 export default function TokenListPage() {
@@ -161,6 +162,9 @@ export default function TokenListPage() {
                       {t('token.remainQuota')}
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {t('token.rpm')}
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       {t('common.actions')}
                     </th>
                   </tr>
@@ -190,9 +194,12 @@ export default function TokenListPage() {
                         {formatDate(token.expired_time)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {token.unlimited_quota 
-                          ? t('token.unlimited') 
+                        {token.unlimited_quota
+                          ? t('token.unlimited')
                           : token.remain_quota.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {token.rpm || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
                         <Link

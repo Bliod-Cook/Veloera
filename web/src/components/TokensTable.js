@@ -98,6 +98,25 @@ const TokensTable = () => {
       },
     },
     {
+      title: 'RPM',
+      dataIndex: 'rpm',
+      render: (text, record, index) => {
+        return (
+          <div>
+            {record.rpm === 0 ? (
+              <Tag size={'large'} color={'green'}>
+                {t('无限制')}
+              </Tag>
+            ) : (
+              <Tag size={'large'} color={'light-blue'}>
+                {text}
+              </Tag>
+            )}
+          </div>
+        );
+      },
+    },
+    {
       title: t('已用额度'),
       dataIndex: 'used_quota',
       render: (text, record, index) => {

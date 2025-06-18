@@ -38,6 +38,7 @@ const EditToken = (props) => {
     model_limits: [],
     allow_ips: '',
     group: '',
+    rpm: 0,
   };
   const [inputs, setInputs] = useState(originInputs);
   const {
@@ -49,6 +50,7 @@ const EditToken = (props) => {
     model_limits,
     allow_ips,
     group,
+    rpm,
   } = inputs;
   // const [visible, setVisible] = useState(false);
   const [models, setModels] = useState([]);
@@ -175,6 +177,7 @@ const EditToken = (props) => {
       // 编辑令牌的逻辑保持不变
       let localInputs = { ...inputs };
       localInputs.remain_quota = parseInt(localInputs.remain_quota);
+      localInputs.rpm = parseInt(localInputs.rpm);
       if (localInputs.expired_time !== -1) {
         let time = Date.parse(localInputs.expired_time);
         if (isNaN(time)) {
@@ -207,7 +210,7 @@ const EditToken = (props) => {
           localInputs.name = `${inputs.name}-${generateRandomSuffix()}`;
         }
         localInputs.remain_quota = parseInt(localInputs.remain_quota);
-
+        localInputs.rpm = parseInt(localInputs.rpm);
         if (localInputs.expired_time !== -1) {
           let time = Date.parse(localInputs.expired_time);
           if (isNaN(time)) {
@@ -398,6 +401,20 @@ const EditToken = (props) => {
             </Button>
           </div>
           <Divider />
+          <div style={{ marginTop: 20 }}>
+            <Typography.Text>{`${t('RPM (Requests Per Minute)')}`}</Typography.Text>
+          </div>
+          <Input
+            style={{ marginTop: 8 }}
+            label={t('RPM')}
+            name='rpm'
+            placeholder={t('请输入 RPM')}
+            onChange={(value) => handleInputChange('rpm', value)}
+            value={rpm}
+            autoComplete='new-password'
+            type='number'
+            disabled={unlimited_quota}
+          />
           <div style={{ marginTop: 10 }}>
             <Typography.Text>
               {t('IP白名单（请勿过度信任此功能）')}

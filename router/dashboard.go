@@ -1,16 +1,18 @@
 package router
 
 import (
-	"github.com/gin-contrib/gzip"
-	"github.com/gin-gonic/gin"
 	"veloera/controller"
 	"veloera/middleware"
+
+	"github.com/gin-contrib/gzip"
+	"github.com/gin-gonic/gin"
 )
 
 func SetDashboardRouter(router *gin.Engine) {
 	apiRouter := router.Group("/")
 	apiRouter.Use(gzip.Gzip(gzip.DefaultCompression))
 	apiRouter.Use(middleware.GlobalAPIRateLimit())
+	apiRouter.Use(middleware.RateLimit())
 	apiRouter.Use(middleware.CORS())
 	apiRouter.Use(middleware.TokenAuth())
 	{
