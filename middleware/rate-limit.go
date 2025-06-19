@@ -75,15 +75,16 @@ func memoryRateLimiter(c *gin.Context, maxRequestNum int, duration int64, mark s
 }
 
 func rateLimitFactory(maxRequestNum int, duration int64, mark string) func(c *gin.Context) {
-	if common.RedisEnabled {
-		return func(c *gin.Context) {
+	return func(c *gin.Context) {
+		if common.RedisEnabled {
 			redisRateLimiter(c, maxRequestNum, duration, mark)
-		}
-	} else {
-		// It's safe to call multi times.
-		inMemoryRateLimiter.Init(common.RateLimitKeyExpirationDuration)
-		return func(c *gin.Context) {
+		} else {
+			// It's safe to call multi times.
+			inMemoryRateLimiter.Init(common.RateLimitKeyExpirationDuration)
 			memoryRateLimiter(c, maxRequestNum, duration, mark)
+		}
+		if !c.IsAborted() {
+			c.Next()
 		}
 	}
 }
@@ -92,22 +93,22 @@ func GlobalWebRateLimit() func(c *gin.Context) {
 	if common.GlobalWebRateLimitEnable {
 		return rateLimitFactory(common.GlobalWebRateLimitNum, common.GlobalWebRateLimitDuration, "GW")
 	}
-	return defNext
+	return func(c *gin.Context) {
+		c.Next()
+	}
 }
 
 func GlobalAPIRateLimit() func(c *gin.Context) {
 	if common.GlobalApiRateLimitEnable {
 		return rateLimitFactory(common.GlobalApiRateLimitNum, common.GlobalApiRateLimitDuration, "GA")
 	}
-	return defNext
+	return func(c *gin.Context) {
+		c.Next()
+	}
 }
 
 func RateLimit() func(c *gin.Context) {
 	return func(c *gin.Context) {
-		if !common.RedisEnabled {
-			// It's safe to call multi times.
-			inMemoryRateLimiter.Init(common.RateLimitKeyExpirationDuration)
-		}
 		key := c.GetString("key")
 		if key == "" {
 			c.Next()
@@ -119,13 +120,10 @@ func RateLimit() func(c *gin.Context) {
 			return
 		}
 		if token.RPM > 0 {
-			if common.RedisEnabled {
-				redisRateLimiter(c, token.RPM, 60, "rpm:"+token.Key)
-			} else {
-				memoryRateLimiter(c, token.RPM, 60, "rpm:"+token.Key)
-			}
+			rateLimitFactory(token.RPM, 60, "rpm:"+token.Key)(c)
+		} else {
+			c.Next()
 		}
-		c.Next()
 	}
 }
 
