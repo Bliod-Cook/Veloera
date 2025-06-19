@@ -122,7 +122,7 @@ func GeminiTextGenerationStreamHandler(c *gin.Context, resp *http.Response, info
 	usage.CompletionTokens = usage.TotalTokens - usage.PromptTokens
 
 	// 结束流式响应
-	helper.Done(c)
+	// helper.Done(c)
 
 	return usage, nil
 }
