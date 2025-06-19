@@ -10,6 +10,7 @@ import (
 	"veloera/dto"
 	"veloera/relay/channel"
 	relaycommon "veloera/relay/common"
+	"veloera/relay/constant"
 	"veloera/service"
 	"veloera/setting/model_setting"
 
@@ -165,6 +166,14 @@ func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, request
 }
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *dto.OpenAIErrorWithStatusCode) {
+	if info.RelayMode == constant.RelayModeGemini {
+		if info.IsStream {
+			return GeminiTextGenerationStreamHandler(c, resp, info)
+		} else {
+			return GeminiTextGenerationHandler(c, resp, info)
+		}
+	}
+
 	if strings.HasPrefix(info.UpstreamModelName, "imagen") {
 		return GeminiImageHandler(c, resp, info)
 	}

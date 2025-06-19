@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 	"strings"
@@ -14,6 +13,9 @@ import (
 	"veloera/relay/channel/gemini"
 	"veloera/relay/channel/openai"
 	relaycommon "veloera/relay/common"
+	"veloera/relay/constant"
+
+	"github.com/gin-gonic/gin"
 )
 
 const (
@@ -190,7 +192,11 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 		case RequestModeClaude:
 			err, usage = claude.ClaudeStreamHandler(c, resp, info, claude.RequestModeMessage)
 		case RequestModeGemini:
-			err, usage = gemini.GeminiChatStreamHandler(c, resp, info)
+			if info.RelayMode == constant.RelayModeGemini {
+				usage, err = gemini.GeminiTextGenerationStreamHandler(c, resp, info)
+			} else {
+				err, usage = gemini.GeminiChatStreamHandler(c, resp, info)
+			}
 		case RequestModeLlama:
 			err, usage = openai.OaiStreamHandler(c, resp, info)
 		}
@@ -199,7 +205,11 @@ func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycom
 		case RequestModeClaude:
 			err, usage = claude.ClaudeHandler(c, resp, claude.RequestModeMessage, info)
 		case RequestModeGemini:
-			err, usage = gemini.GeminiChatHandler(c, resp, info)
+			if info.RelayMode == constant.RelayModeGemini {
+				usage, err = gemini.GeminiTextGenerationHandler(c, resp, info)
+			} else {
+				err, usage = gemini.GeminiChatHandler(c, resp, info)
+			}
 		case RequestModeLlama:
 			err, usage = openai.OpenaiHandler(c, resp, info)
 		}
